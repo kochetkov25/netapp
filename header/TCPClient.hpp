@@ -26,7 +26,5 @@ namespace NETAPP
             int m_port;
     
             sockaddr_in m_servInf;
-
-        void logErr();
     };
 }

@@ -1,5 +1,7 @@
 #include "TCPClient.hpp"
 
+#include "common.hpp"
+
 #include <arpa/inet.h>
 
 #include <unistd.h>
@@ -70,10 +72,5 @@ namespace NETAPP
     void TCPClient::receive()
     {
 
-    }
-
-    void NETAPP::TCPClient::logErr()
-    {
-        std::cout<< "Error: " << strerror(errno) <<"\n";
     }
 }
