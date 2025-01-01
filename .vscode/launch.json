@@ -1,26 +1,30 @@
 {
-    "configurations": [
-        {
-            "name": "Debug netapp",
-            "type": "cppdbg",
-            "request": "launch",
-            "program": "${workspaceFolder}/build/netapp",
-            "args": [],
-            "stopAtEntry": false,
-            "cwd": "${workspaceFolder}",
-            "environment": [],
-            "externalConsole": false,
-            "MIMode": "gdb",
-            "setupCommands": [
-                {
-                    "description": "Enable pretty-printing for gdb",
-                    "text": "-enable-pretty-printing",
-                    "ignoreFailures": true
-                }
-            ],
-            "preLaunchTask": "build_debug",
-            "miDebuggerPath": "/usr/bin/gdb"
-        }
-    ],
-    "version": "2.0.0"
-}
+    "version": "0.2.0",
+    "configurations": 
+    [
+      {
+        "name": "debug server",
+        "type": "cppdbg",  
+        "request": "launch",
+        "program": "${workspaceFolder}/build/Server/server",  
+        "args": [], 
+        "cwd": "${workspaceFolder}",
+        "externalConsole": false,  
+        "MIMode": "gdb",  
+        "miDebuggerPath": "/usr/bin/gdb", 
+        "stopAtEntry": false  
+      },
+      {
+        "name": "debug client",
+        "type": "cppdbg",  
+        "request": "launch",
+        "program": "${workspaceFolder}/build/Client/client",  
+        "args": [], 
+        "cwd": "${workspaceFolder}",
+        "externalConsole": false, 
+        "MIMode": "gdb",  
+        "miDebuggerPath": "/usr/bin/gdb",  
+        "stopAtEntry": false  
+      }
+    ]
+  }
