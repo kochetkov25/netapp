@@ -3,6 +3,7 @@
 #include "common.hpp"
 
 #include <iostream>
+#include <unistd.h>
 
 namespace NETAPP
 {
@@ -51,5 +52,10 @@ namespace NETAPP
             if(clientDesc)
                 std::cout<<"New Client!" <<"\n";
         }
+    }
+
+    void NETAPP::TCPServer::exit()
+    {
+        close(m_sockDesc);
     }
 }

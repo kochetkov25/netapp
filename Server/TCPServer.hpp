@@ -12,6 +12,8 @@ namespace NETAPP
             bool openSocket(uint16_t port);
 
             void start();
+
+            void exit();
         private:
             int m_sockDesc;
             sockaddr_in m_servInf;
