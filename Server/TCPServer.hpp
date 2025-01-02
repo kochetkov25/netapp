@@ -9,13 +9,14 @@ namespace NETAPP
         public:
             TCPServer();
 
-            bool openSocket(uint16_t port);
+            bool openPort(uint16_t port);
 
             void start();
 
             void exit();
         private:
             int m_sockDesc;
+            int m_clientSockDesc;
             sockaddr_in m_servInf;
             sockaddr_in m_clientInf;
     };

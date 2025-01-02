@@ -2,6 +2,8 @@
 
 #include "common.hpp"
 
+#include <vector>
+#include <string>
 #include <iostream>
 #include <unistd.h>
 
@@ -12,7 +14,7 @@ namespace NETAPP
 
     }
 
-    bool TCPServer::openSocket(uint16_t port)
+    bool TCPServer::openPort(uint16_t port)
     {
         m_sockDesc = socket(AF_INET, SOCK_STREAM, 0);
         if(m_sockDesc == -1)
@@ -48,14 +50,25 @@ namespace NETAPP
         while(true)
         {
             socklen_t clientAddrLen = 0;
-            auto clientDesc = accept(m_sockDesc, reinterpret_cast<sockaddr*>(&m_clientInf), &clientAddrLen);
-            if(clientDesc)
+            m_clientSockDesc = accept(m_sockDesc, reinterpret_cast<sockaddr*>(&m_clientInf), &clientAddrLen);
+            if(m_clientSockDesc)
+            {
                 std::cout<<"New Client!" <<"\n";
+                while (true)
+                {
+                    std::vector<char> buff(1024);
+                    auto cntBytes = recv(m_clientSockDesc, buff.data(), buff.size(), 0);
+                    std::cout<<"Message size: "<<cntBytes<<"\n";
+                    std::string str(buff.data());
+                    std::cout<<"[client message]: "<<str<<"\n";
+                }
+            }
         }
     }
 
     void NETAPP::TCPServer::exit()
     {
         close(m_sockDesc);
+        close(m_clientSockDesc);
     }
 }
