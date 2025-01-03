@@ -11,6 +11,8 @@
 #include <iostream>
 #include <string>
 
+#include <exception>
+
 namespace NETAPP
 {
 
@@ -67,21 +69,18 @@ namespace NETAPP
 
     bool TCPClient::send(const char *data, size_t size)
     {
-        static int num = 0;
-        if(m_sockDesc)
+        size_t res = ::send(m_sockDesc, data, size, 0);
+        if(res != -1)
         {
-            while (true)
-            {
-                std::string str = "pack num: ";
-                str += std::to_string(num);
-                num++;
-                auto res = ::send(m_sockDesc, str.data(), str.size(), 0);
-                std::cout<<"send: "<<res<<"\n";
-                sleep(1);
-            }            
+            return true;
         }
-        return true;
+        else
+        {
+            logErr();
+            return false;
+        }
     }
+
     void TCPClient::receive()
     {
 

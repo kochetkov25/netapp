@@ -1,6 +1,7 @@
 #pragma once
 
 #include <netinet/in.h>
+#include <mutex>
 
 namespace NETAPP
 {
@@ -14,10 +15,15 @@ namespace NETAPP
             void start();
 
             void exit();
+
         private:
+            void clientHandler();
+            
             int m_sockDesc;
             int m_clientSockDesc;
             sockaddr_in m_servInf;
             sockaddr_in m_clientInf;
+
+            std::mutex m_clientMtx;
     };
 }

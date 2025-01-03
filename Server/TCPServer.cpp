@@ -6,6 +6,7 @@
 #include <string>
 #include <iostream>
 #include <unistd.h>
+#include <thread>
 
 namespace NETAPP
 {
@@ -44,7 +45,7 @@ namespace NETAPP
         return true;
     }
 
-    void NETAPP::TCPServer::start()
+    void TCPServer::start()
     {
         std::cout<<"Ready for new clients..."<<"\n";
         while(true)
@@ -53,20 +54,26 @@ namespace NETAPP
             m_clientSockDesc = accept(m_sockDesc, reinterpret_cast<sockaddr*>(&m_clientInf), &clientAddrLen);
             if(m_clientSockDesc)
             {
-                std::cout<<"New Client!" <<"\n";
-                while (true)
-                {
-                    std::vector<char> buff(1024);
-                    auto cntBytes = recv(m_clientSockDesc, buff.data(), buff.size(), 0);
-                    std::cout<<"Message size: "<<cntBytes<<"\n";
-                    std::string str(buff.data());
-                    std::cout<<"[client message]: "<<str<<"\n";
-                }
+                std::thread thrd([this](){
+                    this->clientHandler();
+                });
+                thrd.detach();
             }
         }
     }
 
-    void NETAPP::TCPServer::exit()
+    void TCPServer::clientHandler()
+    {
+        std::vector<char> buff(1024);
+        while(recv(m_clientSockDesc, buff.data(), buff.size(), 0))
+        {
+            std::lock_guard<std::mutex>grd(m_clientMtx);
+            std::string str(buff.data());
+            std::cout<<"[Client message]: "<<str<<"\n";
+        }
+    }
+
+    void TCPServer::exit()
     {
         close(m_sockDesc);
         close(m_clientSockDesc);
