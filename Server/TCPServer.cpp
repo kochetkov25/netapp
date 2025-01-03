@@ -8,6 +8,7 @@
 #include <unistd.h>
 #include <thread>
 
+#include "pack.pb.h"
 namespace NETAPP
 {
     TCPServer::TCPServer()
@@ -68,8 +69,13 @@ namespace NETAPP
         while(recv(m_clientSockDesc, buff.data(), buff.size(), 0))
         {
             std::lock_guard<std::mutex>grd(m_clientMtx);
-            std::string str(buff.data());
-            std::cout<<"[Client message]: "<<str<<"\n";
+
+            Pack recivedPack;
+            recivedPack.ParseFromArray(buff.data(), buff.size());
+            std::cout<<"[Recived id]: "<<recivedPack.id()<<"\n";
+            std::cout<<"[Recived name]: "<<recivedPack.name()<<"\n";
+            std::cout<<"[Recived data]: "<<recivedPack.data()<<"\n";
+            std::cout<<"[Recived value]: "<<recivedPack.value()<<"\n";
         }
     }
 

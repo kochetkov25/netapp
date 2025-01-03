@@ -11,8 +11,7 @@
 #include <iostream>
 #include <string>
 
-#include <exception>
-
+#include "pack.pb.h"
 namespace NETAPP
 {
 
@@ -79,6 +78,24 @@ namespace NETAPP
             logErr();
             return false;
         }
+    }
+
+    bool TCPClient::sendProto(const char *data, size_t size)
+    {
+        Pack pack;
+        pack.set_id(30125);
+        pack.set_data("TEST: proto msg from client.");
+        pack.set_name("Test Client #1");
+        pack.set_value(221730125);
+        std::string sendPack;
+        pack.SerializeToString(&sendPack);
+        auto res = send(sendPack.data(), sendPack.size());
+        if(res)
+        {
+            std::cout<<"client sent: "<<sendPack.size()<<"bytes"<<"\n";
+            return true;
+        }
+        return false;
     }
 
     void TCPClient::receive()

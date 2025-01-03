@@ -4,6 +4,8 @@
 #include <unistd.h>
 #include <signal.h>
 
+#include <google/protobuf/stubs/common.h>
+
 int main(int argc, char* argv[])
 {
     signal(SIGPIPE, SIG_IGN);
@@ -13,7 +15,7 @@ int main(int argc, char* argv[])
 
     std::string msg = "start";
     int num = 0;
-    while(client.send(msg.data(), msg.size()))
+    while(client.sendProto(msg.data(), msg.size()))
     {
         msg.clear();
         msg += "pack num: " + std::to_string(num);
@@ -22,5 +24,6 @@ int main(int argc, char* argv[])
     }
 
     client.exit();
+    google::protobuf::ShutdownProtobufLibrary();
     return 0;
 }

@@ -17,6 +17,9 @@ namespace NETAPP
             void exit();
     
             bool send(const char* data, size_t size);
+
+            bool sendProto(const char* data, size_t size);
+
             void receive();
     
         private:
