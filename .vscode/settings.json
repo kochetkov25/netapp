@@ -67,6 +67,7 @@
         "thread": "cpp",
         "typeindex": "cpp",
         "variant": "cpp",
-        "*.inc": "cpp"
+        "*.inc": "cpp",
+        "unordered_set": "cpp"
     }
 }

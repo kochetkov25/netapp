@@ -12,6 +12,8 @@ namespace NETAPP
         public:
             TCPClient();
             TCPClient(const std::string& ip, uint16_t port);
+            
+            ~TCPClient();
     
             bool connect(const std::string& ip, uint16_t port);
             void exit();

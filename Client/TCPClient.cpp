@@ -22,6 +22,11 @@ namespace NETAPP
         m_ipAdr = "";
     }
 
+    NETAPP::TCPClient::~TCPClient()
+    {
+        exit();
+    }   
+
     TCPClient::TCPClient(const std::string &ip, uint16_t port)
     {
 
