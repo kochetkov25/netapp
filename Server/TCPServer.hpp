@@ -2,6 +2,8 @@
 
 #include <netinet/in.h>
 
+#include <sys/epoll.h>
+
 #include <thread>
 #include <vector>
 #include <memory>
@@ -51,12 +53,23 @@ namespace NETAPP
             std::thread m_acceptThrd;
             std::thread m_handleThrd;
 
-            uint16_t m_servPort;
-            int m_serverSockDesc;
-            sockaddr_in m_servInf;
+            std::thread m_mainThrd;
 
-            //ServerStatus m_status = ServerStatus::DOWN;
+            uint16_t m_servPort;
+            sockaddr_in m_servInf;
+            int m_serverSockDesc;
+
             std::atomic<ServerStatus> m_status;
 
+            /*epoll*/
+            int m_epollDesc;
+            epoll_event m_epollEvents[20]; //GUARDED BY m_epollMtx
+            std::mutex m_epollMtx;
+            void setEpoll(int sockDesc, epoll_event ev);
+            void unsetEpoll(int sockDesc);
+            int waitEpoll();
+
+
+            void mainLoop();
     };
 }
