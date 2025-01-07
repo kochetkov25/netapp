@@ -31,29 +31,10 @@ namespace NETAPP
 
             void joinThrds();
         private:
-            struct TClient
-            {
-                int m_clientSockDesc;
-                sockaddr_in m_clientInf;  
-                socklen_t m_clientAddrLen;
-            };
-            std::vector<std::unique_ptr<TClient>> m_clients; //GUARDED BY m_clientMtx
-            std::mutex m_clientMtx;
-
 
             bool openPort();
 
-            void handleClients();
-
-            void acceptClients();
-
-            void disconnectClient(const std::unique_ptr<TClient>& client);
-
-            
-            std::thread m_acceptThrd;
-            std::thread m_handleThrd;
-
-            std::thread m_mainThrd;
+            void disconnectClient(int sockDesc);
 
             uint16_t m_servPort;
             sockaddr_in m_servInf;
@@ -62,14 +43,17 @@ namespace NETAPP
             std::atomic<ServerStatus> m_status;
 
             /*epoll*/
+            static const int EVENT_SIZE = 20;
             int m_epollDesc;
-            epoll_event m_epollEvents[20]; //GUARDED BY m_epollMtx
+            epoll_event m_epollEvents[EVENT_SIZE]; //GUARDED BY m_epollMtx
             std::mutex m_epollMtx;
+
             void setEpoll(int sockDesc, epoll_event ev);
             void unsetEpoll(int sockDesc);
-            int waitEpoll();
+            void awakeEpoll();
+            int  waitEpoll();
 
-
+            std::thread m_mainThrd;
             void mainLoop();
     };
 }
