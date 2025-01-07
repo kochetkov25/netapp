@@ -2,6 +2,7 @@
 #include <string.h>
 #include <iostream>
 
+#include <spdlog/spdlog.h>
 namespace NETAPP
 {
     void logErr()

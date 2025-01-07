@@ -61,7 +61,8 @@ namespace NETAPP
             logErr();
             return false;
         }
-        std::cout<<"Server listening on port: " << m_servPort << "\n";
+        //std::cout<<"Server listening on port: " << m_servPort << "\n";
+        spdlog::info("Server listening on port: {}", m_servPort);
         return true;
     }
 
@@ -69,16 +70,19 @@ namespace NETAPP
     {
         if(m_status.load() == ServerStatus::UP)
         {
-            std::cout<<"Server already runnig!"<<"\n";
+            //std::cout<<"Server already runnig!"<<"\n";
+            spdlog::warn("Server already running!");
             return;
         }   
         
         if(!openPort())
         {
-            std::cout<<"Unable to open port: "<<m_servPort<<std::endl;
+            //std::cout<<"Unable to open port: "<<m_servPort<<std::endl;
+            spdlog::critical("Unable to open port: {}", m_servPort);
             return;
         }
-        std::cout<<"Ready for new clients!"<<"\n";
+        //std::cout<<"Ready for new clients!"<<"\n";
+        spdlog::info("Ready for new clients!");
         m_status.store(ServerStatus::UP);
 
         m_mainThrd = std::thread([this](){this->mainLoop();});
@@ -119,14 +123,14 @@ namespace NETAPP
 
         uint64_t value = 1;
         write(epollKiller, &value, sizeof(value));
-        std::cout<<"epoll awake!"<<"\n";
     }
 
     void TCPServer::stop()
     {
         if(m_status.load() == ServerStatus::DOWN)
         {
-            std::cout<<"Server already stoped!"<<"\n";
+            //std::cout<<"Server already stoped!"<<"\n";
+            spdlog::warn("Server already stoped!");
             return;
         }
 
@@ -141,7 +145,8 @@ namespace NETAPP
         
         joinThrds();
 
-        std::cout<<"Server stoped!"<<"\n";
+        //std::cout<<"Server stoped!"<<"\n";
+        spdlog::info("Server stoped!");
     }
 
     void NETAPP::TCPServer::mainLoop()

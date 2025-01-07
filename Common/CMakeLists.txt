@@ -17,3 +17,7 @@ target_include_directories(common PUBLIC
                                         ${CMAKE_CURRENT_BINARY_DIR})
 
 target_link_libraries(common PUBLIC ${Protobuf_LIBRARIES})
+
+
+add_subdirectory(external/spdlog)
+target_link_libraries(common PUBLIC spdlog::spdlog) 
