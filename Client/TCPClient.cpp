@@ -29,7 +29,7 @@ namespace NETAPP
 
     TCPClient::TCPClient(const std::string &ip, uint16_t port)
     {
-
+        connect(ip, port);
     }
 
     bool TCPClient::connect(const std::string &ip, uint16_t port)
@@ -61,21 +61,22 @@ namespace NETAPP
             return false;
         }
         
-        std::cout<< "Conection successful!" <<"\n";
+        spdlog::info("Connection succesful!");
         return true;
     }
 
     void TCPClient::exit()
     {
-        std::cout<< "Close socket: " << m_sockDesc <<"\n";
+        spdlog::info("Close socket: {}", m_sockDesc);
         close(m_sockDesc);
     }
 
     bool TCPClient::send(const char *data, size_t size)
     {
-        size_t res = ::send(m_sockDesc, data, size, 0);
+        ssize_t res = ::send(m_sockDesc, data, size, 0);
         if(res != -1)
         {
+            spdlog::debug("Client sent: {} bytes.", res);
             return true;
         }
         else
@@ -88,16 +89,17 @@ namespace NETAPP
     bool TCPClient::sendProto(const char *data, size_t size)
     {
         Pack pack;
-        pack.set_id(30125);
-        pack.set_data("TEST: proto msg from client.");
-        pack.set_name("Test Client #1");
-        pack.set_value(221730125);
+
+        pack.set_socket(m_sockDesc);
+        pack.set_size(size);
+        pack.set_data(data);
+
         std::string sendPack;
         pack.SerializeToString(&sendPack);
+
         auto res = send(sendPack.data(), sendPack.size());
         if(res)
         {
-            std::cout<<"client sent: "<<sendPack.size()<<"bytes"<<"\n";
             return true;
         }
         return false;

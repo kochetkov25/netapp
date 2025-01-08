@@ -2,8 +2,7 @@ syntax = "proto3";
 
 message Pack
 {
-    string name = 1;
-    int32 id    = 2;
-    bytes data  = 3;
-    int64 value = 4;
+    int32 socket  = 1;
+    int32 size    = 2;
+    bytes data    = 3;
 }
