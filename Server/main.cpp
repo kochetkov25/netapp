@@ -6,8 +6,12 @@
 
 #include <google/protobuf/stubs/common.h>
 
+#include <spdlog/spdlog.h>
+
 int main(int argc, char* argv[])
 {
+    spdlog::set_level(spdlog::level::debug);
+    
     signal(SIGPIPE, SIG_IGN);
     
     NETAPP::TCPServer server;

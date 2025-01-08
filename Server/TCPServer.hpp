@@ -29,6 +29,8 @@ namespace NETAPP
 
             void stop();
 
+            void setPort(uint16_t port);
+
             void joinThrds();
         private:
 
@@ -48,9 +50,9 @@ namespace NETAPP
             epoll_event m_epollEvents[EVENT_SIZE]; //GUARDED BY m_epollMtx
             std::mutex m_epollMtx;
 
-            void setEpoll(int sockDesc, epoll_event ev);
-            void unsetEpoll(int sockDesc);
-            void awakeEpoll();
+            bool setEpoll(int sockDesc, epoll_event ev);
+            bool unsetEpoll(int sockDesc);
+            bool awakeEpoll();
             int  waitEpoll();
 
             std::thread m_mainThrd;

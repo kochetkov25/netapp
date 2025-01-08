@@ -7,6 +7,6 @@ namespace NETAPP
 {
     void logErr()
     {
-        std::cout<< "Error: " << strerror(errno) <<"\n";
+        spdlog::error(strerror(errno));
     }  
 } 
