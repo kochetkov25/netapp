@@ -17,6 +17,6 @@
 
 ### Build Instructions
 1. Clone the repository:
-   git clone https://github.com/yourusername/netapp.git
+   ```git clone https://github.com/yourusername/netapp.git
    cd netapp
    ./build_debug.sh
