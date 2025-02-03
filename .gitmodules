@@ -1,3 +1,6 @@
 [submodule "Common/external/spdlog"]
 	path = Common/external/spdlog
 	url = https://github.com/gabime/spdlog.git
+[submodule "Common/external/thrdpool"]
+	path = Common/external/thrdpool
+	url = https://github.com/kochetkov25/thrdpool.git

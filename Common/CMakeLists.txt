@@ -21,3 +21,8 @@ target_link_libraries(common PUBLIC ${Protobuf_LIBRARIES})
 
 add_subdirectory(external/spdlog)
 target_link_libraries(common PUBLIC spdlog::spdlog) 
+
+#thrdpool
+target_include_directories(common PUBLIC ${CMAKE_SOURCE_DIR}/Common/external/thrdpool/include)
+add_subdirectory(external/thrdpool)
+target_link_libraries(common PUBLIC thrdpool)
