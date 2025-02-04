@@ -14,7 +14,7 @@
 namespace NETAPP
 {
     /*ctor*/
-    TCPServer::TCPServer()
+    TCPServer::TCPServer() : m_tasksPool(4)
     {
         m_servPort = 8080;
         m_status.store(ServerStatus::DOWN);
@@ -99,7 +99,13 @@ namespace NETAPP
         spdlog::info("Ready for new clients!");
         m_status.store(ServerStatus::UP);
 
-        m_mainThrd = std::thread([this](){this->mainLoop();});
+        /*set server sock to epoll*/
+        epoll_event epollEv{};
+        epollEv.events = EPOLLIN;
+        epollEv.data.fd = m_serverSockDesc;
+        setEpoll(m_serverSockDesc, epollEv);
+
+        m_tasksPool.submit([this](){this->mainLoop();});
     }
 
     /*wrapper*/
@@ -161,7 +167,6 @@ namespace NETAPP
         close(sockDesc);
     }
 
-
     void TCPServer::stop()
     {
         if(m_status.load() == ServerStatus::DOWN)
@@ -181,66 +186,77 @@ namespace NETAPP
         
         joinThrds();
 
+        m_tasksPool.stop();
+
         spdlog::info("Server stoped!");
     }
 
+    /*server routine*/
     void NETAPP::TCPServer::mainLoop()
     {
-        /*inf about conected client*/
-        socklen_t clientAddrLen = 0;
-        sockaddr_in clientInf = {0};
-        int clientSockDesc = -1;
-
-        /*set server sock to epoll*/
-        epoll_event epollEv{};
-        epollEv.events = EPOLLIN;
-        epollEv.data.fd = m_serverSockDesc;
-        setEpoll(m_serverSockDesc, epollEv);
-
-        while(m_status.load() == ServerStatus::UP)
+        spdlog::debug("main loop is runing...");
+        int cntEvents = waitEpoll();
+        spdlog::debug("main loop got event!");
+        /*check server status*/
+        if(m_status.load() == ServerStatus::DOWN)
+            return;
+        /*handle events*/
+        for(int ev = 0; ev < cntEvents; ev++)
         {
-            spdlog::debug("main loop is runing...");
-            int cntEvents = waitEpoll();
-            spdlog::debug("main loop got event!");
-
-            for(int ev = 0; ev < cntEvents; ev++)
+            /*new connection on server sock*/
+            if(m_epollEvents[ev].data.fd == m_serverSockDesc)
             {
-                /*new connection on server socket*/
-                if(m_epollEvents[ev].data.fd == m_serverSockDesc)
-                {
-                    clientSockDesc = accept(m_serverSockDesc, reinterpret_cast<sockaddr*>(&clientInf), &clientAddrLen);
-                    if(clientSockDesc >= 0)
-                    {
-                        spdlog::info("New client on socket: {}", clientSockDesc);
-                        /*set client sock nonblock*/
-                        fcntl(clientSockDesc, F_SETFL, O_NONBLOCK);
-                        /*set client sock to epoll*/
-                        epollEv.events = EPOLLIN | EPOLLET;
-                        epollEv.data.fd = clientSockDesc;
-                        setEpoll(clientSockDesc, epollEv);
-                    }
-                }
-                else /*new data from client*/
-                {
-                    /*disconnect or error*/
-                    if(m_epollEvents[ev].events & EPOLLERR || m_epollEvents[ev].events & EPOLLHUP)
-                    {
-                        disconnectClient(m_epollEvents[ev].data.fd);
-                    }
-                    else if(m_epollEvents[ev].events & EPOLLIN) /*data*/
-                    {
-                        std::vector<char> buff(1024);
-                        int sd = m_epollEvents[ev].data.fd;
-                        ssize_t cntBytes = recv(sd, buff.data(), buff.size(), 0);
-                        if(cntBytes > 0)
-                            spdlog::info("Got: {} bytes on socket: {}.", cntBytes, sd);
-                        else /*client disconnected*/
-                        {
-                            disconnectClient(m_epollEvents[ev].data.fd);
-                        }
-                    }
-                }
+                m_tasksPool.submit([this](){this->acceptClient();});
             }
+            /*disconnect or error*/
+            else if(m_epollEvents[ev].events & EPOLLERR || m_epollEvents[ev].events & EPOLLHUP)
+            {
+                m_tasksPool.submit([this, ev](){this->disconnectClient(this->m_epollEvents[ev].data.fd);});
+            }
+            /*other*/
+            else
+            {
+                m_tasksPool.submit([this, ev](){this->handleClient(this->m_epollEvents[ev].data.fd);});
+            }
+        }
+        /*run this loop again*/
+        if(m_status.load() == ServerStatus::UP)
+            m_tasksPool.submit([this](){this->mainLoop();});
+    }
+    
+    void NETAPP::TCPServer::acceptClient()
+    {
+        epoll_event epollEv{};
+        socklen_t clientAddrLen = 0;
+        sockaddr_in clientInf   = {0};
+        
+        int clientSockDesc = accept(m_serverSockDesc, reinterpret_cast<sockaddr*>(&clientInf), 
+                                    &clientAddrLen);
+        
+        if(clientSockDesc >= 0)
+        {
+            spdlog::info("New client on socket: {}", clientSockDesc);
+            /*set client sock nonblock*/
+            fcntl(clientSockDesc, F_SETFL, O_NONBLOCK);
+            /*set client sock to epoll*/
+            epollEv.events = EPOLLIN | EPOLLET;
+            epollEv.data.fd = clientSockDesc;
+            setEpoll(clientSockDesc, epollEv);
+        }
+    }
+
+    void NETAPP::TCPServer::handleClient(int sd)
+    {
+        std::vector<char> buff(1024);
+
+        ssize_t cntBytes = recv(sd, buff.data(), buff.size(), 0);
+        if(cntBytes > 0)
+        {
+            spdlog::info("Got: {} bytes on socket: {}.", cntBytes, sd);
+        }
+        else /*client disconnected*/
+        {
+            m_tasksPool.submit([this, sd](){this->disconnectClient(sd);});
         }
     }
 }

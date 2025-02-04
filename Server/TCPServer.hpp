@@ -1,5 +1,7 @@
 #pragma once
 
+#include <thrdpool.hpp>
+
 #include <netinet/in.h>
 
 #include <sys/epoll.h>
@@ -50,12 +52,19 @@ namespace NETAPP
             epoll_event m_epollEvents[EVENT_SIZE]; //GUARDED BY m_epollMtx
             std::mutex m_epollMtx;
 
+            /*util funcs*/
             bool setEpoll(int sockDesc, epoll_event ev);
             bool unsetEpoll(int sockDesc);
             bool awakeEpoll();
             int  waitEpoll();
 
+            /*main server loop*/
             std::thread m_mainThrd;
             void mainLoop();
+
+            /*for process tasks*/
+            TP::ThreadPool m_tasksPool;
+            void acceptClient();
+            void handleClient(int sd);
     };
 }
