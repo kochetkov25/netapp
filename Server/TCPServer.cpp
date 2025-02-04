@@ -10,6 +10,8 @@
 
 #include <sys/eventfd.h>
 
+#include "ClientHandler.hpp"
+
 #include "pack.pb.h"
 namespace NETAPP
 {
@@ -253,6 +255,11 @@ namespace NETAPP
         if(cntBytes > 0)
         {
             spdlog::info("Got: {} bytes on socket: {}.", cntBytes, sd);
+            ClientHandler handler;
+            auto response = handler.parseData(buff);
+            
+            ssize_t bytesSent = send(sd, response.c_str(), response.length(), 0);
+            spdlog::info("Sent: {} bytes on socket: {}.", bytesSent, sd);
         }
         else /*client disconnected*/
         {

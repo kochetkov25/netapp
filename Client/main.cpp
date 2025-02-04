@@ -34,6 +34,10 @@ int main(int argc, char* argv[])
             wrk = false;
             continue;
         }
+        else
+        {
+            client.receive();
+        }
     }
 
     client.exit();

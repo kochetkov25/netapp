@@ -11,6 +11,8 @@
 #include <iostream>
 #include <string>
 
+#include <random>
+
 #include "pack.pb.h"
 namespace NETAPP
 {
@@ -89,10 +91,17 @@ namespace NETAPP
     bool TCPClient::sendProto(const char *data, size_t size)
     {
         Pack pack;
+        /*random num for 'echo' check*/
+        std::random_device rd;
+        std::mt19937 gen(rd());
+        std::uniform_int_distribution<uint32_t> dist(0, UINT16_MAX);
+        uint32_t num = dist(gen);
+        /*client name for 'hello' check*/
+        std::string name = std::string("client_") + std::to_string(m_sockDesc);
 
-        pack.set_socket(m_sockDesc);
-        pack.set_size(size);
-        pack.set_data(data);
+        pack.set_request(data);
+        pack.set_value(num);
+        pack.set_name(name.data());
 
         std::string sendPack;
         pack.SerializeToString(&sendPack);
@@ -100,6 +109,9 @@ namespace NETAPP
         auto res = send(sendPack.data(), sendPack.size());
         if(res)
         {
+            spdlog::info("Sent VALUE: {}",   num);
+            spdlog::info("Sent NAME: {}",    name);
+            spdlog::info("Sent REQUEST: {}", data);
             return true;
         }
         return false;
@@ -107,6 +119,18 @@ namespace NETAPP
 
     void TCPClient::receive()
     {
+        std::vector<char> buff(1024);
+        ssize_t bytesReceived = recv(m_sockDesc, buff.data(), buff.size(), 0);
 
+        if(bytesReceived <= 0)
+            return;
+
+        spdlog::debug("Get: {} bytes from client.", bytesReceived);
+        Pack responsePack;
+        responsePack.ParseFromArray(buff.data(), buff.size());
+
+        spdlog::info("RESPONSE: {}", responsePack.request());
+        spdlog::info("VALUE: {}",    responsePack.value());
+        spdlog::info("NAME: {}",     responsePack.name());
     }
 }

@@ -4,7 +4,9 @@ project(server VERSION 0.0.1)
 
 add_executable(server TCPServer.hpp
                       TCPServer.cpp
-                      main.cpp)
+                      main.cpp
+                      ClientHandler.hpp
+                      ClientHandler.cpp)
 
 #link common
 target_link_libraries(server PRIVATE common)
